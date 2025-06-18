@@ -5,16 +5,63 @@ import {
   TouchableOpacity,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { KeyboardAvoidingView } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 
 export default function SignupScreen() {
   const router = useRouter();
+  const { signUp } = useAuth();
   const [agree, setAgree] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Form state
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSignup = async () => {
+    // Validation
+    if (!firstName || !lastName || !email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (!agree) {
+      Alert.alert('Error', 'Please accept the Privacy Policy and Terms of Use');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await signUp(email, password);
+      
+      if (error) {
+        Alert.alert('Signup Failed', error.message);
+      } else {
+        Alert.alert(
+          'Success!', 
+          'Account created successfully!',
+          [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -41,6 +88,8 @@ export default function SignupScreen() {
               placeholder="First Name"
               className="flex-1 ml-3 text-base text-gray-700"
               placeholderTextColor="#9CA3AF"
+              value={firstName}
+              onChangeText={setFirstName}
             />
           </View>
 
@@ -51,6 +100,8 @@ export default function SignupScreen() {
               placeholder="Last Name"
               className="flex-1 ml-3 text-base text-gray-700"
               placeholderTextColor="#9CA3AF"
+              value={lastName}
+              onChangeText={setLastName}
             />
           </View>
 
@@ -62,6 +113,9 @@ export default function SignupScreen() {
               className="flex-1 ml-3 text-base text-gray-700"
               keyboardType="email-address"
               placeholderTextColor="#9CA3AF"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
             />
           </View>
 
@@ -73,6 +127,8 @@ export default function SignupScreen() {
               className="flex-1 ml-3 text-base text-gray-700"
               placeholderTextColor="#9CA3AF"
               secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
               <Feather
@@ -96,38 +152,40 @@ export default function SignupScreen() {
               <Text className="text-indigo-700 underline">Privacy Policy</Text> and{' '}
               <Text className="text-indigo-700 underline">Term of Use</Text>
             </Text>
-        </View>
+          </View>
 
           <View className="mt-20">
-  {/* Register Button */}
-  <TouchableOpacity
-    className="bg-indigo-800 py-4 rounded-full mb-4 shadow-lg"
-    onPress={() => router.replace('/(tabs)')}
-  >
-    <Text className="text-white text-center text-lg font-semibold">
-      Register
-    </Text>
-  </TouchableOpacity>
+            {/* Register Button */}
+            <TouchableOpacity
+              className={`py-4 rounded-full mb-4 shadow-lg ${
+                loading ? 'bg-indigo-400' : 'bg-indigo-800'
+              }`}
+              onPress={handleSignup}
+              disabled={loading}
+            >
+              <Text className="text-white text-center text-lg font-semibold">
+                {loading ? 'Creating Account...' : 'Register'}
+              </Text>
+            </TouchableOpacity>
 
-  {/* Divider */}
-  <View className="flex-row items-center mb-4">
-    <View className="flex-1 h-px bg-gray-300" />
-    <Text className="mx-2 text-gray-400">Or</Text>
-    <View className="flex-1 h-px bg-gray-300" />
-  </View>
+            {/* Divider */}
+            <View className="flex-row items-center mb-4">
+              <View className="flex-1 h-px bg-gray-300" />
+              <Text className="mx-2 text-gray-400">Or</Text>
+              <View className="flex-1 h-px bg-gray-300" />
+            </View>
 
-  {/* Login Redirect */}
-  <Text className="text-center text-sm text-gray-500">
-    Already have an account?{' '}
-    <Text
-      className="text-indigo-700 font-semibold"
-      onPress={() => router.replace('/(auth)/login')}
-    >
-      Login
-    </Text>
-  </Text>
-</View>
-
+            {/* Login Redirect */}
+            <Text className="text-center text-sm text-gray-500">
+              Already have an account?{' '}
+              <Text
+                className="text-indigo-700 font-semibold"
+                onPress={() => router.replace('/(auth)/login')}
+              >
+                Login
+              </Text>
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

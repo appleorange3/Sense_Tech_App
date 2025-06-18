@@ -7,14 +7,20 @@ import {
   Platform,
   ScrollView,
   Animated,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -27,8 +33,27 @@ export default function LoginScreen() {
     }).start();
   }, []);
 
-  const handleLogin = () => {
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        Alert.alert('Login Failed', error.message);
+      } else {
+        // Success! The AuthContext will automatically redirect to (tabs)
+        console.log('Login successful');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignUp = () => {
@@ -60,6 +85,9 @@ export default function LoginScreen() {
                 className="flex-1 ml-3 text-base text-gray-700"
                 placeholderTextColor="#9CA3AF"
                 keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
               />
             </View>
 
@@ -71,6 +99,8 @@ export default function LoginScreen() {
                 className="flex-1 ml-3 text-base text-gray-700"
                 placeholderTextColor="#9CA3AF"
                 secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                 <Feather
@@ -88,11 +118,16 @@ export default function LoginScreen() {
 
             {/* Login Button */}
             <TouchableOpacity
-              className="flex-row items-center justify-center bg-indigo-800 py-4 rounded-full w-full mb-6"
+              className={`flex-row items-center justify-center py-4 rounded-full w-full mb-6 ${
+                loading ? 'bg-indigo-400' : 'bg-indigo-800'
+              }`}
               onPress={handleLogin}
+              disabled={loading}
             >
               <Feather name="log-in" size={20} color="#fff" className="mr-2" />
-              <Text className="text-white text-lg font-semibold">Login</Text>
+              <Text className="text-white text-lg font-semibold">
+                {loading ? 'Signing in...' : 'Login'}
+              </Text>
             </TouchableOpacity>
 
             {/* Divider */}
@@ -104,7 +139,7 @@ export default function LoginScreen() {
 
             {/* Sign Up */}
             <Text className="text-gray-500 text-sm text-center mb-10">
-              Don’t have an account yet?{' '}
+              Don't have an account yet?{' '}
               <Text
                 className="text-indigo-700 font-semibold"
                 onPress={handleSignUp}
