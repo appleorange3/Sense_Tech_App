@@ -9,7 +9,7 @@ import {
   applianceToggleMap,
   fanToggleAction,
   defaultToggleAction,
-} from '../utils/applianceFunctions'; 
+} from '../../utils/applianceFunctions'; 
 
 interface DeviceState {
   isOn: boolean;

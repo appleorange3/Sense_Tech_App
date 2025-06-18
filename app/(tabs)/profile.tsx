@@ -1,10 +1,46 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useNavigation } from 'expo-router';
+import { useLayoutEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
+  const { signOut, user } = useAuth();
+  
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: { display: 'none' },
+    });
+  }, [navigation]);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+              // The AuthContext will automatically redirect to (auth)
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -32,8 +68,12 @@ export default function ProfileScreen() {
 
         {/* User Info */}
         <View className="items-center mb-10">
-          <Text className="text-white text-xl font-semibold">Moin Shaikh</Text>
-          <Text className="text-indigo-200 mt-1">moin@example.com</Text>
+          <Text className="text-white text-xl font-semibold">
+            {user?.email?.split('@')[0] || 'User'}
+          </Text>
+          <Text className="text-indigo-200 mt-1">
+            {user?.email || 'user@example.com'}
+          </Text>
         </View>
 
         {/* Buttons */}
@@ -53,7 +93,10 @@ export default function ProfileScreen() {
             <Feather name="chevron-right" size={20} color="#1E1B4B" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="bg-red-100 py-4 px-6 rounded-2xl flex-row items-center justify-between mt-4">
+          <TouchableOpacity 
+            className="bg-red-100 py-4 px-6 rounded-2xl flex-row items-center justify-between mt-4"
+            onPress={handleLogout}
+          >
             <Text className="text-red-500 font-medium text-base">Logout</Text>
             <AntDesign name="logout" size={20} color="#EF4444" />
           </TouchableOpacity>
