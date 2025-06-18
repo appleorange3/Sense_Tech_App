@@ -1,7 +1,7 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    
+    "typeRoots": ["./node_modules/@types", "./firebase.d.ts"],
     "strict": true,
     "paths": {
       "@/*": [
@@ -15,5 +15,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-, "app/appliances/[applianceid].tsi"  ]
+, "app/appliances/[applianceid].tsx"  ]
 }
