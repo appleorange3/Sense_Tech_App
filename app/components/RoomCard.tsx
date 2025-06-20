@@ -1,12 +1,13 @@
 // components/RoomCard.tsx
 import React from 'react';
-import { TouchableOpacity, Text, Image } from 'react-native';
+import { Image, ImageSourcePropType, Text, TouchableOpacity } from 'react-native';
 
 interface RoomCardProps {
   name: string;
-  icon: any;
+  icon: ImageSourcePropType;
   onPress: () => void;
 }
+
 
 const RoomCard: React.FC<RoomCardProps> = ({ name, icon, onPress }) => {
   return (
