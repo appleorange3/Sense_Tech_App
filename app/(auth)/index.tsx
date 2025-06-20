@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -12,11 +12,11 @@ export default function OnboardingScreen() {
     <View className="flex-1 bg-indigo-900">
       {/* Top Section */}
       <View className="flex-1 justify-center items-center px-4 pt-2 pb-40">
-        <View className="w-full h-96 justify-center items-center mb-4">
+        <View className="w-full h-96 justify-center items-center mb-24">
           <Image 
             source={require('../../assets/images/onboarding.png')}
             className="w-full h-full"
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
       </View>
