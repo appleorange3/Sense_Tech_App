@@ -1,25 +1,35 @@
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  ImageSourcePropType,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import fanImage from '../../../assets/icons/Fan.png';
+import tubelightImage from '../../../assets/icons/Lightbulb.png';
 import { getRoomDevices, saveRoomDevices } from '../../../utils/deviceStorage';
 
 type Device = {
   type: 'fan' | 'switch';
   name: string;
-  icon: string;
+  image: ImageSourcePropType;
 };
 
 const deviceTemplates: Device[] = [
   {
     type: 'fan',
     name: 'Fan',
-    icon: 'fan',
+    image: fanImage,
   },
   {
     type: 'switch',
     name: 'Tubelight',
-    icon: 'lightbulb',
+    image: tubelightImage,
   },
 ];
 
@@ -37,10 +47,10 @@ export default function AddDeviceScreen() {
       return;
     }
 
-    const newDevice: Device = {
+    const newDevice = {
       type: selectedDevice as 'fan' | 'switch',
       name: deviceName.trim(),
-      icon: selectedDevice === 'fan' ? 'fan' : 'lightbulb',
+      image: selectedDevice === 'fan' ? fanImage : tubelightImage, // not stored if using type-based rendering
     };
 
     const existingDevices: Device[] = await getRoomDevices(roomId);
@@ -89,12 +99,13 @@ export default function AddDeviceScreen() {
                 setDeviceName(device.name);
               }}
             >
-              <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-4">
-                <MaterialCommunityIcons name={device.icon as any} size={32} color="#6B7280" />
+              <View className="w-16 h-16 items-center justify-center mb-4 overflow-hidden">
+                <Image
+                  source={device.image}
+                  style={{ width: 60, height: 60, resizeMode: 'contain' }}
+                />
               </View>
-              <Text className="text-gray-700 font-medium text-center">
-                {device.name}
-              </Text>
+              <Text className="text-gray-700 font-medium text-center">{device.name}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -119,9 +130,7 @@ export default function AddDeviceScreen() {
         >
           <Text
             className={`text-lg font-semibold ${
-              selectedDevice && deviceName.trim()
-                ? 'text-indigo-900'
-                : 'text-gray-600'
+              selectedDevice && deviceName.trim() ? 'text-indigo-900' : 'text-gray-600'
             }`}
           >
             Add

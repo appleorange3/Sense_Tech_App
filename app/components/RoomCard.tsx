@@ -19,7 +19,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ name, icon, onPress, onDelete }) =>
         className="absolute top-2 right-2 z-10"
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Feather name="minus-circle" size={20} color="#1F2937" />
+        <Feather name="minus-circle" size={20} color="#4B5563" />
       </TouchableOpacity>
 
       {/* Main card */}
@@ -27,8 +27,8 @@ const RoomCard: React.FC<RoomCardProps> = ({ name, icon, onPress, onDelete }) =>
         className="flex-1 bg-white rounded-2xl items-center justify-center"
         onPress={onPress}
       >
-        <Image source={icon} className="w-14 h-14 mb-2" resizeMode="contain" />
-        <Text className="text-sm text-gray-800 font-medium">{name}</Text>
+        <Image source={icon} className="w-14 h-14 mb-6" resizeMode="contain" />
+        <Text className="text-sm text-gray-600 font-medium">{name}</Text>
       </TouchableOpacity>
     </View>
   );
