@@ -1,8 +1,9 @@
+// app/(tabs)/index.tsx or app/home.tsx depending on your folder structure
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { getStoredRooms } from '../../utils/storage'; // make sure this path is correct
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { deleteRoomFromStorage, getStoredRooms } from '../../utils/storage'; // ✅ Make sure these exist
 import RoomCard from '../components/RoomCard';
 
 interface Room {
@@ -38,6 +39,26 @@ export default function HomeScreen() {
     router.push(`/room/${roomId}`);
   };
 
+  const handleDeleteRoom = (roomId: string, roomName: string) => {
+    Alert.alert(
+      'Delete Room',
+      `Are you sure you want to delete "${roomName}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteRoomFromStorage(roomId);
+            const updatedRooms = rooms.filter(r => r.id !== roomId);
+            setRooms(updatedRooms);
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
@@ -68,6 +89,7 @@ export default function HomeScreen() {
                 name={room.name}
                 icon={room.icon}
                 onPress={() => handleRoomPress(room.name)}
+                onDelete={() => handleDeleteRoom(room.id, room.name)}
               />
             ))}
           </View>

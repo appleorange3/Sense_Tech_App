@@ -20,3 +20,23 @@ export const saveRoom = async (newRoom: any) => {
     console.error('Failed to save room', e);
   }
 };
+
+// ✅ New: deleteRoomFromStorage
+export const deleteRoomFromStorage = async (roomId: string) => {
+  try {
+    // Get existing rooms
+    const json = await AsyncStorage.getItem('rooms');
+    if (json) {
+      const rooms = JSON.parse(json);
+      const updatedRooms = rooms.filter((room: any) => room.id !== roomId);
+
+      // Save updated list
+      await AsyncStorage.setItem('rooms', JSON.stringify(updatedRooms));
+    }
+
+    // Delete associated devices
+    await AsyncStorage.removeItem(`devices_${roomId}`);
+  } catch (e) {
+    console.error('Failed to delete room and its devices:', e);
+  }
+};
