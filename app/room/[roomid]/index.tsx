@@ -1,33 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import DeviceCard from '../components/DeviceCard';
-import FanSliderCard from '../components/FanSliderCard';
-import { devicesByRoom } from '../../data/devicesByRoom';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import {
-  applianceToggleMap,
-  fanToggleAction,
-  defaultToggleAction,
-} from '../../utils/applianceFunctions'; 
+    applianceToggleMap,
+    defaultToggleAction
+} from '../../../utils/applianceFunctions';
+import { getRoomDevices } from '../../../utils/deviceStorage';
+import DeviceCard from '../../components/DeviceCard';
+import FanSliderCard from '../../components/FanSliderCard';
 
 interface DeviceState {
   isOn: boolean;
-  speed?: number; // for fan type
+  speed?: number;
+}
+
+interface Device {
+  type: 'fan' | 'switch';
+  name: string;
+  icon: string;
 }
 
 export default function RoomScreen() {
   const { roomid } = useLocalSearchParams();
   const router = useRouter();
   const roomId = typeof roomid === 'string' ? roomid : roomid?.[0] || '';
-  const roomDevices = devicesByRoom[roomId.toLowerCase()] || [];
 
+  const [roomDevices, setRoomDevices] = useState<Device[]>([]);
   const [deviceStates, setDeviceStates] = useState<Record<string, DeviceState>>({});
 
-  // Initialize default states for all room devices
-  useEffect(() => {
+  const loadDevices = useCallback(async () => {
+    const devices: Device[] = await getRoomDevices(roomId);
+    setRoomDevices(devices);
+
     const initialStates: Record<string, DeviceState> = {};
-    roomDevices.forEach((device) => {
+    devices.forEach((device) => {
       initialStates[device.name] = {
         isOn: false,
         ...(device.type === 'fan' && { speed: 0 }),
@@ -36,31 +43,28 @@ export default function RoomScreen() {
     setDeviceStates(initialStates);
   }, [roomId]);
 
-  // Handle toggle on/off
-const toggleDevice = (name: string) => {
-  const current = deviceStates[name]?.isOn ?? false;
-  const newIsOn = !current;
+  useFocusEffect(
+    useCallback(() => {
+      loadDevices();
+    }, [loadDevices])
+  );
 
-  // Update the state
-  setDeviceStates((prev) => ({
-    ...prev,
-    [name]: {
-      ...prev[name],
-      isOn: newIsOn,
-    },
-  }));
+  const toggleDevice = (name: string) => {
+    const current = deviceStates[name]?.isOn ?? false;
+    const newIsOn = !current;
+    setDeviceStates((prev) => ({
+      ...prev,
+      [name]: {
+        ...prev[name],
+        isOn: newIsOn,
+      },
+    }));
+    const action = applianceToggleMap[name] || defaultToggleAction;
+    action(name, newIsOn);
+  };
 
-  // 🔥 Call the mapped action with the new state
-  const action = applianceToggleMap[name] || defaultToggleAction;
-  action(name, newIsOn);
-  console.log(name);
-  //console.log(`🔌 ${name} toggled to ${newIsOn ? 'On' : 'Off'}`);
-};
-
-
-  // Handle fan slider change
   const changeSpeed = (name: string, value: number) => {
-    if (!deviceStates[name]?.isOn) return; // prevent changes when device is off
+    if (!deviceStates[name]?.isOn) return;
     setDeviceStates((prev) => ({
       ...prev,
       [name]: {
@@ -68,7 +72,10 @@ const toggleDevice = (name: string) => {
         speed: value,
       },
     }));
-    console.log(`🌪️ ${name} speed set to ${value}`);
+  };
+
+  const handleAddDevice = () => {
+    router.push(`/room/${roomId}/adddevices`);
   };
 
   return (
@@ -79,10 +86,16 @@ const toggleDevice = (name: string) => {
         <Text className="text-xl font-semibold text-indigo-900 capitalize">{roomId}</Text>
         <Feather name="user" size={24} onPress={() => router.push('/profile')} color="#1E1B4B" />
       </View>
-
-      {/* Devices Section */}
+      
+      {/* Content */}
       <View className="flex-1 bg-indigo-900 rounded-t-2xl px-6 pt-10 pb-10 mt-10">
-        <Text className="text-white text-xl font-semibold mb-6">Devices</Text>
+        <View className="flex-row justify-center items-center mb-12">
+          <Text className="text-white text-xl font-semibold mr-2">Devices</Text>
+          <TouchableOpacity onPress={handleAddDevice}>
+            <Feather name="plus-square" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView showsVerticalScrollIndicator={false}>
           {roomDevices.map((device) => {
             const state = deviceStates[device.name] || { isOn: false, speed: 0 };
@@ -108,7 +121,6 @@ const toggleDevice = (name: string) => {
                 />
               );
             }
-
             return null;
           })}
         </ScrollView>
