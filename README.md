@@ -1,5 +1,8 @@
 
 # Welcome to your Expo app 👋
+### 🔗 GitHub Repository  
+[SenseTech Smart Home Backend](https://github.com/shevkar-shubhra/Sense_Tech_App_Backend)
+
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
